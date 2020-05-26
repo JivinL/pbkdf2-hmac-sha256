@@ -84,17 +84,21 @@ void compute_pbkdf2(const uint8_t *key, uint32_t klen, const uint8_t *salt, uint
     uint32_t rounds, uint32_t dklen)
 {
 	uint8_t* dk = (uint8_t*)malloc(sizeof(uint8_t)*dklen);
+	//uint8_t *dk = (uint8_t*)malloc(dklen);
 	HMAC_SHA256_CTX pbkdf_hmac;
 	pbkdf2_sha256(&pbkdf_hmac, key, klen, salt, slen, rounds, dk, dklen);
 	print_as_hex(dk, dklen);
 	
 #if defined(HAS_OSSL)
-	uint8_t dk_ossl[dklen];
+    uint8_t* dk_ossl = (uint8_t*)malloc(sizeof(uint8_t)*dklen);
+	//uint8_t *dk_ossl = (uint8_t*)malloc(dklen);
 	PKCS5_PBKDF2_HMAC((const char *) key, (int) klen, salt, (int) slen, (int) rounds,
 	                  EVP_sha256(), (int) dklen, dk_ossl);
 	
-	check_with_ossl(dk, dk_ossl, sizeof dk, "pbkdf2-sha256");
+	check_with_ossl(dk, dk_ossl, dklen, "pbkdf2-sha256");
+	free(dk_ossl);
 #endif
+	free(dk);
 }
 
 #define DKLEN 50
